@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk,messagebox
 import csv,random, webbrowser
+import pandas as pd
 window = Tk()
 window.title("Treasure Hunter")
 
@@ -14,6 +15,7 @@ leaderImg=PhotoImage(file="leadership.png")
 iconhunterImg=PhotoImage(file="huntermed.png")
 cheatImg=PhotoImage(file="cheat.png")
 infoImg=PhotoImage(file="info.png")
+settingImg=PhotoImage(file="setting.png")
 running= True
 #reset score&collide
 resetscore = True
@@ -23,6 +25,11 @@ GET1000FORFREE = False
 KJ = False
 Fullbombs = True
 Allbombsoff= False
+#keyboardsettings
+deaultUp = True
+deaultDown = True
+deaultLeft = True
+deaultRight = True
 def gamescreen():
     global playground, collide, score, scoreLabel
     # Creating a canvas for the playground
@@ -62,7 +69,7 @@ def gamescreen():
         bomb5 = playground.create_image(600, 420, image=bombImg)
 
 
-    #moving objects randomly
+    #putting objects randomly
     def Randomheart():
         heartX=random.randint(30,1200)
         heartY=random.randint(65,650)
@@ -91,7 +98,6 @@ def gamescreen():
         bomb5X = random.randint(30, 1200)
         bomb5Y = random.randint(65, 650)
         playground.coords(bomb5, bomb5X, bomb5Y)
-
     def Randomknife():
         knifeX = random.randint(30, 1200)
         knifeY = random.randint(65, 650)
@@ -130,7 +136,6 @@ def gamescreen():
                 continuousmovebomb()
             else:
                 playground.after(80,continuousmovebomb)
-
     def continuousmovebomb1():
         if running:
             playground.move(bomb1, -4, -9)
@@ -139,7 +144,6 @@ def gamescreen():
                 continuousmovebomb1()
             else:
                 playground.after(80,continuousmovebomb1)
-
     def continuousmovebomb2():
         if running:
             playground.move(bomb2, -6, 9)
@@ -148,7 +152,6 @@ def gamescreen():
                 continuousmovebomb2()
             else:
                 playground.after(80,continuousmovebomb2)
-
     def continuousmovebomb3():
         if running:
             playground.move(bomb3, 5, -6)
@@ -157,7 +160,6 @@ def gamescreen():
                 continuousmovebomb3()
             else:
                 playground.after(80,continuousmovebomb3)
-
     def continuousmovebomb4():
         if running:
             playground.move(bomb4, 3, -10)
@@ -221,7 +223,16 @@ def gamescreen():
         running = True
         pauseButton = Button(playground, image=pauseImg, bg="#ae7046", height=70, width=70, command=pause)
         pauseButton.place(x=500, y=20)
-        keyboard()#wake up the keyboard so they can be used once we press start
+        #wake up the keyboard so they can be used once we press start
+        if deaultUp is True:
+            defaultMoveUp()
+        if deaultDown is True:
+            defaultMoveDown()
+        if deaultRight is True:
+            defaultMoveRight()
+        if deaultLeft is True:
+            defaultMoveLeft()
+
         playButton.destroy()
         continuousmoveheart()
         continuousmoveicegold()
@@ -271,7 +282,7 @@ def gamescreen():
                             score = int(line["Score"])
                         elif KJ is True and GET1000FORFREE is True:
                             score = int(line["Score"]) + 10000001000
-
+                    break
                 else:
                     if GET1000FORFREE is True and KJ is False:
                         score = 1000
@@ -874,7 +885,7 @@ def gamescreen():
                     scoreLabel.config(text="Score: " + str(score), fg="#ff1100")
             else:
                 gameover()
-    # Move the hunter in directions（define movements)
+    # Move the hunter in directions（default keys)
     def moveright(event):
         if running:
             playground.move(hunter, 20, 0)  # move the truck 10 units to the right
@@ -896,19 +907,129 @@ def gamescreen():
             hunterReachEdge()
             collideobjects()
 
+    # Move the hunter in directions（customise keys)
+    def cusmoveright(event):
+        global running, collide, score
+        position = str(event.char)
+        message = "Now you use " + position + " to move right!"
+        messagebox.showinfo("Popup", message)
+        if running:
+            playground.move(hunter, 20, 0)  # move the truck 10 units to the right
+            hunterReachEdge() #everytime we move the hunter we call this EdgeReach function
+            collideobjects()
+    def cusmoveleft(event):
+        global running, collide, score
+        position = str(event.char)
+        message = "Now you use " + position + " to move left!"
+        messagebox.showinfo("Popup", message)
+        if running:
+            playground.move(hunter, -20, 0)  # move the truck 10 units to the left
+            hunterReachEdge()
+            collideobjects()
+    def cusmoveup(event):
+        global running, collide, score
+        # position = str(event.char)
+        # message = "Now you use " + position + " to move up!"
+        # messagebox.showinfo("Popup", message)
+        if running:
+            playground.move(hunter, 0, -20)  # move up the truck 10 units
+            hunterReachEdge()
+            collideobjects()
+    def cusmovedown(event):
+        global running, collide, score
+        # position = str(event.char)
+        # message = "Now you use " + position + " to move down!"
+        # messagebox.showinfo("Popup", message)
+        if running:
+            playground.move(hunter, 0, 20)  # move down the truck 10 units
+            hunterReachEdge()
+            collideobjects()
 
 
+    # User experience
+    def settingscreen():
+        global backgroundImg, setting
+        setting = Canvas(playground, width=1280, height=720)
+        setting.pack()
 
-    # Making the hunter move
-    def keyboard():
-        playground.bind_all("<Right>", moveright)
-        playground.bind_all("<d>", moveright)
-        playground.bind_all("<Left>", moveleft)
-        playground.bind_all("<a>", moveleft)
+        # Titile
+        title = Label(setting, text="Bind keys to move object", font="Algerian 24", fg="black", bg="#ae7046")
+        title.place(x=640, y=30, anchor="center")
+        # statement of default settings
+        statement = Label(setting,
+                          text="Default Settings \n MoveUp = W key or Up key \n MoveDown = S key or Down key \n MoveLeft = A key or Left Key \n MoveRight = D Key or Right Key",
+                          font="Arial 15", fg="black", bg="#ae7046")
+        statement.place(x=640, y=150, anchor="center")
+        # background
+        backgroundImg = PhotoImage(file="bg1.png")
+        bg = setting.create_image(450, 450, image=backgroundImg)
+        # customise button
+        cusstatement = Label(setting, text="Customise your keys", font="Arial 15", fg="black", bg="#ae7046")
+        cusstatement.place(x=640, y=250, anchor="center")
+        chooseUpButton = Button(setting, text="Click to choose key for up", font="Algerian 15", fg="black", bg="#ae7046", command=customiseMoveUp)
+        chooseUpButton.place(x=350, y=300)
+        chooseDownButton = Button(setting, text="Click to choose key for down", font="Algerian 15", fg="black", bg="#ae7046",command=customiseMoveDown)
+        chooseDownButton.place(x=350, y=350)
+        chooseLeftButton = Button(setting, text="Click to choose key for left", font="Algerian 15", fg="black", bg="#ae7046",command=customiseMoveLeft)
+        chooseLeftButton.place(x=350, y=400)
+        chooseRightButton = Button(setting, text="Click to choose key for right", font="Algerian 15", fg="black", bg="#ae7046",command=customiseMoveRight)
+        chooseRightButton.place(x=350, y=450)
+        exitsettingButton = Button(setting, text="Exit", font="Algerian 15", fg="black",bg="#ae7046", command=exitsettings)
+        exitsettingButton.place(x=350, y=500)
+
+    def exitsettings():
+        global setting
+        setting.destroy()
+    def customiseMoveUp():
+        global deaultUp, setting
+        deaultUp = False
+        messagebox.showinfo("Popup", "Now close this window, click the key you choose on keyboard then click the Up button to apply.")
+        SetUpButton = Button(setting, text="Up", font="Algerian 15", fg="black", bg="#ae7046")
+        SetUpButton.bind_all("<Key>", cusmoveup)
+        SetUpButton.place(x=740, y=300)
+
+    def customiseMoveDown():
+        global deaultDown,setting, SetDownButton
+        deaultDown = False
+        messagebox.showinfo("Popup","Now close this window, click the key you choose on keyboard then click the Down button to apply.")
+        SetDownButton = Button(setting, text="Down", font="Algerian 15", fg="black", bg="#ae7046")
+        SetDownButton.bind("<Key>", cusmovedown)
+        SetDownButton.place(x=740, y=350)
+    def customiseMoveLeft():
+        global deaultLeft, setting
+        deaultLeft = False
+        messagebox.showinfo("Popup","Now close this window, click the key you choose on keyboard then click the Left button to apply.")
+        SetLeftButton = Button(setting, text="Left", font="Algerian 15", fg="black", bg="#ae7046")
+        SetLeftButton.bind("<Key>", cusmoveleft)
+        SetLeftButton.place(x=740, y=400)
+    def customiseMoveRight():
+        global deaultRight, setting
+        deaultRight = False
+        messagebox.showinfo("Popup","Now close this window, click the key you choose on keyboard then click the Right button to apply.")
+        SetRightButton = Button(setting, text="Right", font="Algerian 15", fg="black", bg="#ae7046")
+        SetRightButton.bind("<Key>", cusmoveright)
+        SetRightButton.place(x=740, y=450)
+
+
+    # Keyboard Settings (Making the hunter move)
+    def defaultMoveUp():
         playground.bind_all("<Up>", moveup)
         playground.bind_all("<w>", moveup)
+    def defaultMoveDown():
         playground.bind_all("<Down>", movedown)
         playground.bind_all("<s>", movedown)
+    def defaultMoveRight():
+        playground.bind_all("<Right>", moveright)
+        playground.bind_all("<d>", moveright)
+    def defaultMoveLeft():
+        playground.bind_all("<Left>", moveleft)
+        playground.bind_all("<a>", moveleft)
+
+
+
+
+
+
     #Pause the game
     def pause():
         global running, pausescreen, backgroundImg
@@ -987,20 +1108,26 @@ def gamescreen():
     def writenameandscore():
         global score, playername, nameinput
         print(playername)
+        fieldnames = ['Player', 'Score']
+        df = pd.read_csv("player.csv")
+        df.drop(df[df['Player']==playername])
+        df.to_csv('player.csv', index = False)
         with open('player.csv', 'a') as csvfile:
              fieldnames = ['Player', 'Score']
              writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
              writer.writerow({'Player': playername, 'Score': score})
+
         csvfile.close()
 
 
 
     #buttons
     playButton = Button(playground, text="Play", font="Algerian 20", fg="orange", bg="#ae7046", command = startgame)
-    playButton.place(x=300,y=20)
+    playButton.place(x=50,y=10)
     bossbutton = Button(playground, text="Boss", command=bossmode, bg="#ae7046")
     bossbutton.place(x=50, y=100)
-
+    SettingButton = Button(playground, text="Setting",font="Algerian 20", fg="black", command=settingscreen, bg="#ae7046")
+    SettingButton.place(x=200, y=10)
     playground.mainloop()
 
 def startscreen():
@@ -1037,6 +1164,7 @@ def startscreen():
     bossbutton.place(x=50, y=600)
 
 
+
     menu.mainloop()
 
 #leadershipboardscreen
@@ -1064,15 +1192,20 @@ def leaderboardscreen():
     secondframe = Frame(leaderboard)
     leaderboard.create_window((0,0), window = secondframe, anchor="nw")
     #load player result
-    with open("player.csv", "r") as csvfile:
+    mainframe.pack()
+
+    df = pd.read_csv("player.csv")
+    sorted_df = df.sort_values(by=["Score"], ascending=False)
+    sorted_df.to_csv('player.csv', index=False)
+    with open('player.csv', "r") as csvfile:
         fieldnames = ['Player', 'Score']
         reader = csv.DictReader(csvfile, fieldnames=fieldnames)
-        mainframe.pack()
         lower = 100
         for line in reader:
             leaderboard.create_text(550,lower, text=line["Player"], font="Algerian 24")
             leaderboard.create_text(700, lower, text=line["Score"], font="Algerian 24")
             lower+=60
+
     #make button
     menuButton = Button(leaderboard, text="Home", font="Algerian 20", fg="orange", bg="#ae7046", command=leaderboardtohome)
     menuButton.place(x=300, y=270)
@@ -1082,6 +1215,7 @@ def leaderboardscreen():
 def bossmode():
     url = 'http://www.bbcnews.com'
     webbrowser.open_new(url)
+
 
 
 
@@ -1113,8 +1247,6 @@ def checkcheatcode():
         cheat.destroy()
     else:
         messagebox.showwarning("Popup","Failed!")
-
-
 def cheatscreen():
     global cheat, backgroundImg,cheatcodeinput
     cheat = Canvas(menu, width=1280, height =720)
